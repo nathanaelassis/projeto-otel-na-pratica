@@ -27,8 +27,6 @@ func NewUser(*config.Users) *User {
 	}
 }
 
-
-
 func (a *User) RegisterRoutes(mux *http.ServeMux) {
 	// Instrumenta cada rota com o middleware otelhttp
 	mux.Handle("GET /users", otelhttp.NewHandler(http.HandlerFunc(a.Handler.List), "ListUsers"))
