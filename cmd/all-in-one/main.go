@@ -11,7 +11,9 @@ import (
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/app"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/config"
 	"google.golang.org/grpc"
+	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/telemetry"
 )
+
 
 func main() {
 	configFlag := flag.String("config", "", "path to the config file")
@@ -26,7 +28,11 @@ func main() {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
+	// Inicializa a telemetria (traces)
+	
+
 	{
+		telemetry.InitTelemetry()
 		a := app.NewUser(&c.Users)
 		a.RegisterRoutes(mux)
 	}
