@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp" //Importar a dependencia otelhttp
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-
+	
 )
 
 type Plan struct {
@@ -23,6 +23,7 @@ type Plan struct {
 	GRPCHandler api.PlanServiceServer
 	Store       store.Plan
 }
+
 
 func NewPlan(*config.Plans) *Plan {
 	store := memory.NewPlanStore()

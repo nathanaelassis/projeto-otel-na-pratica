@@ -29,12 +29,12 @@ func main() {
 	grpcServer := grpc.NewServer(opts...)
 
 	// Inicializa a telemetria (traces)
-	
+	telemetry.InitTelemetry()
 
 	{
-		telemetry.InitTelemetry()
 		a := app.NewUser(&c.Users)
 		a.RegisterRoutes(mux)
+
 	}
 
 	{
