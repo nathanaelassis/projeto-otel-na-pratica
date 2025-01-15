@@ -10,6 +10,7 @@ import (
 	subscriptionhttp "github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/handler/http"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store/memory"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp" //Importar a dependencia otelhttp
 )
 
 type Subscription struct {
@@ -26,9 +27,9 @@ func NewSubscription(cfg *config.Subscriptions) *Subscription {
 }
 
 func (a *Subscription) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /subscriptions", a.Handler.List)
-	mux.HandleFunc("POST /subscriptions", a.Handler.Create)
-	mux.HandleFunc("GET /subscriptions/{id}", a.Handler.Get)
-	mux.HandleFunc("PUT /subscriptions/{id}", a.Handler.Update)
-	mux.HandleFunc("DELETE /subscriptions/{id}", a.Handler.Delete)
+	mux.Handle("GET /subscriptions", otelhttp.NewHandler(http.HandlerFunc(a.Handler.List), "ListSubscriptions"))
+	mux.Handle("POST /subscriptions", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Create), "CreateSubscriptions"))
+	mux.Handle("GET /subscriptions/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Get), "GetSubscriptions"))
+	mux.Handle("PUT /subscriptions/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Update), "UpdateSubscriptions"))
+	mux.Handle("DELETE /subscriptions/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Delete), "DeleteSubscriptions"))
 }

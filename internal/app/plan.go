@@ -13,6 +13,9 @@ import (
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store/memory"
 	"google.golang.org/grpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp" //Importar a dependencia otelhttp
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+
 )
 
 type Plan struct {
@@ -31,11 +34,18 @@ func NewPlan(*config.Plans) *Plan {
 }
 
 func (a *Plan) RegisterRoutes(mux *http.ServeMux, grpcSrv *grpc.Server) {
-	mux.HandleFunc("GET /plans", a.Handler.List)
-	mux.HandleFunc("POST /plans", a.Handler.Create)
-	mux.HandleFunc("GET /plans/{id}", a.Handler.Get)
-	mux.HandleFunc("PUT /plans/{id}", a.Handler.Update)
-	mux.HandleFunc("DELETE /plans/{id}", a.Handler.Delete)
+	// Instrumenta as rotas HTTP com o middleware otelhttp
+	mux.Handle("GET /plans", otelhttp.NewHandler(http.HandlerFunc(a.Handler.List), "ListPlans"))
+	mux.Handle("POST /plans", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Create), "CreatePlan"))
+	mux.Handle("GET /plans/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Get), "GetPlan"))
+	mux.Handle("PUT /plans/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Update), "UpdatePlan"))
+	mux.Handle("DELETE /plans/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Delete), "DeletePlan"))
+
+	// Instrumenta o servidor gRPC com interceptores do OpenTelemetry
+	grpcSrv = grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
 
 	api.RegisterPlanServiceServer(grpcSrv, a.GRPCHandler)
 }
