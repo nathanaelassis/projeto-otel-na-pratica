@@ -10,6 +10,8 @@ import (
 	userhttp "github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/handler/http"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store"
 	"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/pkg/store/memory"
+	//"github.com/dosedetelemetria/projeto-otel-na-pratica/internal/telemetry"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type User struct {
@@ -25,10 +27,13 @@ func NewUser(*config.Users) *User {
 	}
 }
 
+
+
 func (a *User) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /users", a.Handler.List)
-	mux.HandleFunc("POST /users", a.Handler.Create)
-	mux.HandleFunc("GET /users/{id}", a.Handler.Get)
-	mux.HandleFunc("PUT /users/{id}", a.Handler.Update)
-	mux.HandleFunc("DELETE /users/{id}", a.Handler.Delete)
+	// Instrumenta cada rota com o middleware otelhttp
+	mux.Handle("GET /users", otelhttp.NewHandler(http.HandlerFunc(a.Handler.List), "ListUsers"))
+	mux.Handle("POST /users", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Create), "CreateUser"))
+	mux.Handle("GET /users/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Get), "GetUser"))
+	mux.Handle("PUT /users/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Update), "UpdateUser"))
+	mux.Handle("DELETE /users/{id}", otelhttp.NewHandler(http.HandlerFunc(a.Handler.Delete), "DeleteUser"))
 }
